@@ -1,0 +1,200 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/contexts/AuthContext';
+import { Heart, Building, Users, Shield } from 'lucide-react';
+
+type UserRole = 'donor' | 'hospital' | 'ngo' | 'admin';
+
+const Auth = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [role, setRole] = useState<UserRole>('donor');
+  const [loading, setLoading] = useState(false);
+  const { signIn, signUp, user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const { error } = await signIn(email, password);
+    setLoading(false);
+    if (!error) {
+      navigate('/');
+    }
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const { error } = await signUp(email, password, { full_name: fullName, role });
+    setLoading(false);
+    if (!error) {
+      setEmail('');
+      setPassword('');
+      setFullName('');
+    }
+  };
+
+  const roleIcons = {
+    donor: Heart,
+    hospital: Building,
+    ngo: Users,
+    admin: Shield
+  };
+
+  const getRoleDescription = (role: UserRole) => {
+    switch (role) {
+      case 'donor':
+        return 'Individual donors who can donate blood and organs';
+      case 'hospital':
+        return 'Medical institutions that manage patient requests';
+      case 'ngo':
+        return 'Non-profit organizations coordinating donations';
+      case 'admin':
+        return 'System administrators with full access';
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="w-full max-w-md card-shadow">
+        <CardHeader className="text-center">
+          <div className="flex items-center justify-center mb-4">
+            <Heart className="h-8 w-8 text-emergency mr-2" />
+            <CardTitle className="text-2xl font-bold medical-gradient bg-clip-text text-transparent">
+              LifeLink
+            </CardTitle>
+          </div>
+          <CardDescription>
+            Join our community to save lives through donations
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="signin" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="signin">Sign In</TabsTrigger>
+              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="signin">
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signin-email">Email</Label>
+                  <Input
+                    id="signin-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signin-password">Password</Label>
+                  <Input
+                    id="signin-password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    required
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full medical-gradient"
+                  disabled={loading}
+                >
+                  {loading ? 'Signing in...' : 'Sign In'}
+                </Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="signup">
+              <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-name">Full Name</Label>
+                  <Input
+                    id="signup-name"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Enter your full name"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">Email</Label>
+                  <Input
+                    id="signup-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password">Password</Label>
+                  <Input
+                    id="signup-password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Create a password"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="role">Account Type</Label>
+                  <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your account type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(roleIcons).map(([roleKey, Icon]) => (
+                        <SelectItem key={roleKey} value={roleKey}>
+                          <div className="flex items-center space-x-2">
+                            <Icon className="h-4 w-4" />
+                            <div className="flex flex-col">
+                              <span className="capitalize font-medium">{roleKey}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {getRoleDescription(roleKey as UserRole)}
+                              </span>
+                            </div>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full medical-gradient"
+                  disabled={loading}
+                >
+                  {loading ? 'Creating account...' : 'Create Account'}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default Auth;
