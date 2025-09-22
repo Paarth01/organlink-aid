@@ -6,6 +6,7 @@ import { Heart, Menu, User, Hospital, Shield, Activity, LogOut } from "lucide-re
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -106,6 +107,7 @@ const Header = () => {
           
           {user && profile && (
             <div className="flex items-center space-x-4">
+              <NotificationCenter />
               <Badge variant="outline" className="capitalize">
                 {profile.role}
               </Badge>

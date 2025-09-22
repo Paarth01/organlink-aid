@@ -244,6 +244,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      find_compatible_donors: {
+        Args: { request_id_param: string }
+        Returns: {
+          compatibility_score: number
+          donor_id: string
+        }[]
+      }
       get_user_role: {
         Args: { user_uuid: string }
         Returns: Database["public"]["Enums"]["user_role"]
