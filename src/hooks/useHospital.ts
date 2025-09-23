@@ -22,10 +22,13 @@ export const useHospital = () => {
 
   const fetchHospital = async () => {
     if (!user || profile?.role !== 'hospital') {
+      console.log('useHospital: User not logged in or not hospital role', { user: !!user, role: profile?.role });
       setLoading(false);
       return;
     }
 
+    console.log('useHospital: Fetching hospital for user', user.id);
+    
     try {
       const { data, error } = await supabase
         .from('hospitals')
@@ -33,11 +36,14 @@ export const useHospital = () => {
         .eq('user_id', user.id)
         .single();
 
+      console.log('useHospital: Hospital query result', { data, error });
+
       if (error) {
         if (error.code === 'PGRST116') {
           // No hospital record found
+          console.log('useHospital: No hospital record found for user');
           toast({
-            title: "Hospital Profile Missing",
+            title: "Hospital Profile Missing",  
             description: "You must complete your hospital registration to submit requests.",
             variant: "destructive",
           });
@@ -45,10 +51,11 @@ export const useHospital = () => {
           throw error;
         }
       } else {
+        console.log('useHospital: Hospital found', data);
         setHospital(data);
       }
     } catch (error: any) {
-      console.error('Error fetching hospital:', error);
+      console.error('useHospital: Error fetching hospital:', error);
       toast({
         title: "Error loading hospital data",
         description: error.message,
