@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import StatsCard from "@/components/ui/stats-card";
 import { useRequests } from "@/hooks/useRequests";
+import { useHospital } from "@/hooks/useHospital";
 import { useState } from "react";
 import { 
   Hospital, 
@@ -19,9 +20,12 @@ import {
   Phone,
   MapPin
 } from "lucide-react";
+import { useToast } from '@/hooks/use-toast';
 
 const HospitalPortal = () => {
   const { requests, loading, createRequest } = useRequests();
+  const { hospital, loading: hospitalLoading } = useHospital();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     patient_name: '',
     organ_needed: '',
@@ -37,6 +41,15 @@ const HospitalPortal = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.patient_name || !formData.organ_needed || !formData.blood_type_needed || !formData.city) {
+      return;
+    }
+
+    if (!hospital) {
+      toast({
+        title: "Hospital registration required",
+        description: "You must be registered as a hospital to submit requests.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -97,8 +110,15 @@ const HospitalPortal = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Hospital Portal</h1>
-            <p className="text-muted-foreground">Manage patient requests and find compatible donors</p>
+            <h1 className="text-3xl font-bold text-foreground">
+              {hospital ? `${hospital.name} Portal` : 'Hospital Portal'}
+            </h1>
+            <p className="text-muted-foreground">
+              {hospital 
+                ? `Manage patient requests and find compatible donors • ${hospital.address}`
+                : 'Manage patient requests and find compatible donors'
+              }
+            </p>
           </div>
           <Button className="medical-gradient">
             <Plus className="w-4 h-4 mr-2" />
@@ -183,14 +203,14 @@ const HospitalPortal = () => {
                           <SelectValue placeholder="Select blood type" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="a_positive">A+</SelectItem>
-                          <SelectItem value="a_negative">A-</SelectItem>
-                          <SelectItem value="b_positive">B+</SelectItem>
-                          <SelectItem value="b_negative">B-</SelectItem>
-                          <SelectItem value="ab_positive">AB+</SelectItem>
-                          <SelectItem value="ab_negative">AB-</SelectItem>
-                          <SelectItem value="o_positive">O+</SelectItem>
-                          <SelectItem value="o_negative">O-</SelectItem>
+                          <SelectItem value="A+">A+</SelectItem>
+                          <SelectItem value="A-">A-</SelectItem>
+                          <SelectItem value="B+">B+</SelectItem>
+                          <SelectItem value="B-">B-</SelectItem>
+                          <SelectItem value="AB+">AB+</SelectItem>
+                          <SelectItem value="AB-">AB-</SelectItem>
+                          <SelectItem value="O+">O+</SelectItem>
+                          <SelectItem value="O-">O-</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -315,8 +335,8 @@ const HospitalPortal = () => {
                               <p className="text-sm text-muted-foreground">
                                 {request.description || `${request.organ_needed} needed for patient`}
                               </p>
-                              <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                                <span>Blood Type: {request.blood_type_needed.replace('_', '')}</span>
+                               <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                                 <span>Blood Type: {request.blood_type_needed}</span>
                                 <span>•</span>
                                 <span>City: {request.city}</span>
                                 {request.patient_age && (

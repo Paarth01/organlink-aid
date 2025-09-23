@@ -16,6 +16,8 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [role, setRole] = useState<UserRole>('donor');
+  const [hospitalName, setHospitalName] = useState('');
+  const [hospitalAddress, setHospitalAddress] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
@@ -39,12 +41,22 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await signUp(email, password, { full_name: fullName, role });
+    const userData = { 
+      full_name: fullName, 
+      role,
+      ...(role === 'hospital' && {
+        hospital_name: hospitalName,
+        hospital_address: hospitalAddress
+      })
+    };
+    const { error } = await signUp(email, password, userData);
     setLoading(false);
     if (!error) {
       setEmail('');
       setPassword('');
       setFullName('');
+      setHospitalName('');
+      setHospitalAddress('');
     }
   };
 
@@ -181,6 +193,32 @@ const Auth = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                {role === 'hospital' && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="hospital-name">Hospital Name</Label>
+                      <Input
+                        id="hospital-name"
+                        type="text"
+                        value={hospitalName}
+                        onChange={(e) => setHospitalName(e.target.value)}
+                        placeholder="Enter hospital name"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="hospital-address">Hospital Address</Label>
+                      <Input
+                        id="hospital-address"
+                        type="text"
+                        value={hospitalAddress}
+                        onChange={(e) => setHospitalAddress(e.target.value)}
+                        placeholder="Enter hospital address"
+                        required
+                      />
+                    </div>
+                  </>
+                )}
                 <Button
                   type="submit"
                   className="w-full medical-gradient"

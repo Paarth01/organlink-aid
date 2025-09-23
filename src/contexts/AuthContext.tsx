@@ -18,7 +18,7 @@ interface AuthContextType {
   profile: Profile | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, userData?: { full_name: string; role: UserRole }) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, userData?: { full_name: string; role: UserRole; hospital_name?: string; hospital_address?: string }) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: any }>;
