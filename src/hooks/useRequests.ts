@@ -6,20 +6,21 @@ import { useAuth } from '@/contexts/AuthContext';
 export interface Request {
   id: string;
   patient_name: string;
-  organ_needed: any;
-  blood_type_needed: any;
-  urgency: any;
-  status: any;
-  description?: string;
   patient_age?: number;
+  organ_needed: string;
+  blood_type_needed: string;
+  urgency: string;
+  description?: string;
   city: string;
   required_by?: string;
+  status: string;
   created_at: string;
-  updated_at: string;
-  hospital_id: string;
-  hospitals?: {
+  updated_at?: string;
+  hospitals: {
+    id: string;
     name: string;
     address: string;
+    verified: boolean;
   };
 }
 
@@ -38,7 +39,7 @@ export const useRequests = () => {
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { profile } = useAuth();
+  const { user } = useAuth();
 
   const fetchRequests = async () => {
     try {
@@ -47,10 +48,13 @@ export const useRequests = () => {
         .select(`
           *,
           hospitals (
+            id,
             name,
-            address
+            address,
+            verified
           )
         `)
+        .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -67,12 +71,21 @@ export const useRequests = () => {
   };
 
   const createRequest = async (requestData: CreateRequestData) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to create a request",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       // First get the hospital record for the current user
       const { data: hospitalData, error: hospitalError } = await supabase
         .from('hospitals')
         .select('id')
-        .eq('user_id', profile?.id)
+        .eq('user_id', user.id)
         .single();
 
       if (hospitalError) {
