@@ -7,7 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
-import { Heart, Building, Users, Shield } from 'lucide-react';
+import { Heart, Building, Users, Shield, AlertCircle } from 'lucide-react';
+import { signInSchema, signUpSchema, type SignInFormData, type SignUpFormData } from '@/lib/validations';
+import { useToast } from '@/hooks/use-toast';
 
 type UserRole = 'donor' | 'hospital' | 'ngo' | 'admin';
 
@@ -19,8 +21,10 @@ const Auth = () => {
   const [hospitalName, setHospitalName] = useState('');
   const [hospitalAddress, setHospitalAddress] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (user) {
@@ -30,16 +34,65 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
+    
+    // Validate form data
+    const formData: SignInFormData = { email, password };
+    const validation = signInSchema.safeParse(formData);
+    
+    if (!validation.success) {
+      const fieldErrors: Record<string, string> = {};
+      validation.error.errors.forEach((error) => {
+        if (error.path[0]) {
+          fieldErrors[error.path[0] as string] = error.message;
+        }
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
     setLoading(true);
     const { error } = await signIn(email, password);
     setLoading(false);
-    if (!error) {
+    
+    if (error) {
+      toast({
+        title: "Sign in failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
       navigate('/');
     }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
+    
+    // Validate form data
+    const formData: SignUpFormData = { 
+      email, 
+      password, 
+      fullName, 
+      role,
+      hospitalName: role === 'hospital' ? hospitalName : undefined,
+      hospitalAddress: role === 'hospital' ? hospitalAddress : undefined
+    };
+    
+    const validation = signUpSchema.safeParse(formData);
+    
+    if (!validation.success) {
+      const fieldErrors: Record<string, string> = {};
+      validation.error.errors.forEach((error) => {
+        if (error.path[0]) {
+          fieldErrors[error.path[0] as string] = error.message;
+        }
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
     setLoading(true);
     const userData = { 
       full_name: fullName, 
@@ -51,7 +104,19 @@ const Auth = () => {
     };
     const { error } = await signUp(email, password, userData);
     setLoading(false);
-    if (!error) {
+    
+    if (error) {
+      toast({
+        title: "Sign up failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Account created successfully",
+        description: "Please check your email to verify your account.",
+        variant: "default",
+      });
       setEmail('');
       setPassword('');
       setFullName('');
@@ -111,8 +176,15 @@ const Auth = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email"
+                    className={errors.email ? "border-destructive" : ""}
                     required
                   />
+                  {errors.email && (
+                    <div className="flex items-center text-sm text-destructive">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.email}
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signin-password">Password</Label>
@@ -122,8 +194,15 @@ const Auth = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
+                    className={errors.password ? "border-destructive" : ""}
                     required
                   />
+                  {errors.password && (
+                    <div className="flex items-center text-sm text-destructive">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.password}
+                    </div>
+                  )}
                 </div>
                 <Button
                   type="submit"
@@ -145,8 +224,15 @@ const Auth = () => {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Enter your full name"
+                    className={errors.fullName ? "border-destructive" : ""}
                     required
                   />
+                  {errors.fullName && (
+                    <div className="flex items-center text-sm text-destructive">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.fullName}
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
@@ -156,8 +242,15 @@ const Auth = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email"
+                    className={errors.email ? "border-destructive" : ""}
                     required
                   />
+                  {errors.email && (
+                    <div className="flex items-center text-sm text-destructive">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.email}
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Password</Label>
@@ -166,9 +259,16 @@ const Auth = () => {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Create a password"
+                    placeholder="Create a strong password (8+ chars, uppercase, lowercase, number)"
+                    className={errors.password ? "border-destructive" : ""}
                     required
                   />
+                  {errors.password && (
+                    <div className="flex items-center text-sm text-destructive">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.password}
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="role">Account Type</Label>
@@ -203,8 +303,15 @@ const Auth = () => {
                         value={hospitalName}
                         onChange={(e) => setHospitalName(e.target.value)}
                         placeholder="Enter hospital name"
+                        className={errors.hospitalName ? "border-destructive" : ""}
                         required
                       />
+                      {errors.hospitalName && (
+                        <div className="flex items-center text-sm text-destructive">
+                          <AlertCircle className="h-4 w-4 mr-1" />
+                          {errors.hospitalName}
+                        </div>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="hospital-address">Hospital Address</Label>
@@ -214,8 +321,15 @@ const Auth = () => {
                         value={hospitalAddress}
                         onChange={(e) => setHospitalAddress(e.target.value)}
                         placeholder="Enter hospital address"
+                        className={errors.hospitalAddress ? "border-destructive" : ""}
                         required
                       />
+                      {errors.hospitalAddress && (
+                        <div className="flex items-center text-sm text-destructive">
+                          <AlertCircle className="h-4 w-4 mr-1" />
+                          {errors.hospitalAddress}
+                        </div>
+                      )}
                     </div>
                   </>
                 )}

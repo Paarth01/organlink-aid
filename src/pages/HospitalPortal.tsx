@@ -18,9 +18,11 @@ import {
   Clock,
   User,
   Phone,
-  MapPin
+  MapPin,
+  AlertCircle
 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
+import { medicalRequestSchema, type MedicalRequestFormData } from '@/lib/validations';
 
 const HospitalPortal = () => {
   const { requests, loading, createRequest } = useRequests();
@@ -37,12 +39,11 @@ const HospitalPortal = () => {
     required_by: ''
   });
   const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.patient_name || !formData.organ_needed || !formData.blood_type_needed || !formData.city) {
-      return;
-    }
+    setErrors({});
 
     if (!hospital) {
       toast({
@@ -53,15 +54,55 @@ const HospitalPortal = () => {
       return;
     }
 
-    setSubmitting(true);
-    const requestData = {
-      ...formData,
+    // Validate form data
+    const requestData: MedicalRequestFormData = {
+      patient_name: formData.patient_name,
+      organ_needed: formData.organ_needed as any,
+      blood_type_needed: formData.blood_type_needed as any,
+      urgency: formData.urgency,
+      city: formData.city,
       patient_age: formData.patient_age ? parseInt(formData.patient_age) : undefined,
+      description: formData.description || undefined,
       required_by: formData.required_by || undefined,
     };
 
-    const { error } = await createRequest(requestData);
-    if (!error) {
+    const validation = medicalRequestSchema.safeParse(requestData);
+    
+    if (!validation.success) {
+      const fieldErrors: Record<string, string> = {};
+      validation.error.errors.forEach((error) => {
+        if (error.path[0]) {
+          fieldErrors[error.path[0] as string] = error.message;
+        }
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
+    setSubmitting(true);
+    const { error } = await createRequest({
+      patient_name: validation.data.patient_name,
+      organ_needed: validation.data.organ_needed,
+      blood_type_needed: validation.data.blood_type_needed,
+      urgency: validation.data.urgency,
+      city: validation.data.city,
+      patient_age: validation.data.patient_age,
+      description: validation.data.description,
+      required_by: validation.data.required_by,
+    });
+    
+    if (error) {
+      toast({
+        title: "Failed to submit request",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Request submitted successfully",
+        description: "Your donation request has been submitted and will be matched with compatible donors.",
+        variant: "default",
+      });
       setFormData({
         patient_name: '',
         organ_needed: '',
@@ -174,11 +215,17 @@ const HospitalPortal = () => {
                       <label className="text-sm font-medium text-foreground">Patient Name *</label>
                       <Input 
                         placeholder="Enter patient name" 
-                        className="mt-1"
+                        className={`mt-1 ${errors.patient_name ? "border-destructive" : ""}`}
                         value={formData.patient_name}
                         onChange={(e) => setFormData(prev => ({ ...prev, patient_name: e.target.value }))}
                         required
                       />
+                      {errors.patient_name && (
+                        <div className="flex items-center text-sm text-destructive mt-1">
+                          <AlertCircle className="h-4 w-4 mr-1" />
+                          {errors.patient_name}
+                        </div>
+                      )}
                     </div>
                     <div>
                       <label className="text-sm font-medium text-foreground">Organ/Donation Type *</label>
@@ -218,21 +265,33 @@ const HospitalPortal = () => {
                       <label className="text-sm font-medium text-foreground">City *</label>
                       <Input 
                         placeholder="Enter city" 
-                        className="mt-1"
+                        className={`mt-1 ${errors.city ? "border-destructive" : ""}`}
                         value={formData.city}
                         onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
                         required
                       />
+                      {errors.city && (
+                        <div className="flex items-center text-sm text-destructive mt-1">
+                          <AlertCircle className="h-4 w-4 mr-1" />
+                          {errors.city}
+                        </div>
+                      )}
                     </div>
                     <div>
                       <label className="text-sm font-medium text-foreground">Patient Age</label>
                       <Input 
                         placeholder="Enter patient age" 
                         type="number"
-                        className="mt-1"
+                        className={`mt-1 ${errors.patient_age ? "border-destructive" : ""}`}
                         value={formData.patient_age}
                         onChange={(e) => setFormData(prev => ({ ...prev, patient_age: e.target.value }))}
                       />
+                      {errors.patient_age && (
+                        <div className="flex items-center text-sm text-destructive mt-1">
+                          <AlertCircle className="h-4 w-4 mr-1" />
+                          {errors.patient_age}
+                        </div>
+                      )}
                     </div>
                     <div>
                       <label className="text-sm font-medium text-foreground">Urgency Level</label>

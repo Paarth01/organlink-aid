@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          created_at: string | null
+          id: string
+          new_data: Json | null
+          old_data: Json | null
+          operation: string
+          table_name: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          operation: string
+          table_name: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          operation?: string
+          table_name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       donors: {
         Row: {
           availability: boolean | null
@@ -244,6 +274,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      anonymize_patient_data: {
+        Args: { patient_name: string; request_id: string }
+        Returns: string
+      }
+      can_view_donor_match: {
+        Args: { donor_id: string }
+        Returns: boolean
+      }
       find_compatible_donors: {
         Args: { request_id_param: string }
         Returns: {
@@ -272,6 +310,14 @@ export type Database = {
       get_user_role: {
         Args: { user_uuid: string }
         Returns: Database["public"]["Enums"]["user_role"]
+      }
+      is_donor_owner: {
+        Args: { donor_id: string }
+        Returns: boolean
+      }
+      is_hospital_user: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
     }
     Enums: {
