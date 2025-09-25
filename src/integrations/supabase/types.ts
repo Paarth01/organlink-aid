@@ -251,6 +251,24 @@ export type Database = {
           donor_id: string
         }[]
       }
+      get_donor_matching_requests: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          anonymized_patient_name: string
+          blood_type_needed: Database["public"]["Enums"]["blood_type"]
+          city: string
+          created_at: string
+          hospital_address: string
+          hospital_id: string
+          hospital_name: string
+          hospital_verified: boolean
+          id: string
+          organ_needed: Database["public"]["Enums"]["organ_type"]
+          required_by: string
+          status: Database["public"]["Enums"]["request_status"]
+          urgency: Database["public"]["Enums"]["urgency_level"]
+        }[]
+      }
       get_user_role: {
         Args: { user_uuid: string }
         Returns: Database["public"]["Enums"]["user_role"]

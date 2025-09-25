@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import StatsCard from "@/components/ui/stats-card";
 import { useMatches } from "@/hooks/useMatches";
-import { useRequests } from "@/hooks/useRequests";
+import { useDonorRequests } from "@/hooks/useDonorRequests";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { 
@@ -23,7 +23,7 @@ import {
 
 const DonorPortal = () => {
   const { matches, loading: matchesLoading, updateMatchStatus } = useMatches();
-  const { requests, loading: requestsLoading } = useRequests();
+  const { requests, loading: requestsLoading } = useDonorRequests();
   const { profile } = useAuth();
   const [updatingMatch, setUpdatingMatch] = useState<string | null>(null);
 
@@ -149,19 +149,13 @@ const DonorPortal = () => {
                               {request.organ_needed} • {request.blood_type_needed.replace('_', '')}
                             </h3>
                             <p className="text-sm text-muted-foreground">
-                              Patient: {request.patient_name}
-                              {request.patient_age && ` (${request.patient_age} years)`}
+                              {request.anonymized_patient_name}
                             </p>
                           </div>
-                          {request.description && (
-                            <p className="text-sm text-muted-foreground">
-                              {request.description}
-                            </p>
-                          )}
                           <div className="space-y-2 text-xs">
                             <div className="flex items-center space-x-1">
                               <Hospital className="h-3 w-3 text-primary" />
-                              <span>{request.hospitals.name}</span>
+                              <span>{request.hospital_name}</span>
                             </div>
                             <div className="flex items-center space-x-1">
                               <MapPin className="h-3 w-3 text-primary" />

@@ -24,6 +24,22 @@ export interface Request {
   };
 }
 
+export interface AnonymizedRequest {
+  id: string;
+  anonymized_patient_name: string;
+  organ_needed: string;
+  blood_type_needed: string;
+  urgency: string;
+  city: string;
+  required_by?: string;
+  status: string;
+  created_at: string;
+  hospital_id: string;
+  hospital_name: string;
+  hospital_address: string;
+  hospital_verified: boolean;
+}
+
 export interface CreateRequestData {
   patient_name: string;
   organ_needed: string;
