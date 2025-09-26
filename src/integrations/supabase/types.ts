@@ -192,6 +192,7 @@ export type Database = {
           phone: string | null
           role: Database["public"]["Enums"]["user_role"]
           updated_at: string | null
+          verified: boolean | null
         }
         Insert: {
           created_at?: string | null
@@ -201,6 +202,7 @@ export type Database = {
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string | null
+          verified?: boolean | null
         }
         Update: {
           created_at?: string | null
@@ -210,6 +212,7 @@ export type Database = {
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string | null
+          verified?: boolean | null
         }
         Relationships: []
       }
@@ -307,6 +310,24 @@ export type Database = {
           urgency: Database["public"]["Enums"]["urgency_level"]
         }[]
       }
+      get_ngo_anonymized_requests: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          anonymized_patient_name: string
+          blood_type_needed: Database["public"]["Enums"]["blood_type"]
+          city: string
+          created_at: string
+          hospital_address: string
+          hospital_id: string
+          hospital_name: string
+          hospital_verified: boolean
+          id: string
+          organ_needed: Database["public"]["Enums"]["organ_type"]
+          required_by: string
+          status: Database["public"]["Enums"]["request_status"]
+          urgency: Database["public"]["Enums"]["urgency_level"]
+        }[]
+      }
       get_user_role: {
         Args: { user_uuid: string }
         Returns: Database["public"]["Enums"]["user_role"]
@@ -316,6 +337,10 @@ export type Database = {
         Returns: boolean
       }
       is_hospital_user: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_verified_ngo: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }

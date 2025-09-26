@@ -6,7 +6,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import StatsCard from "@/components/ui/stats-card";
 import { useRequests } from "@/hooks/useRequests";
+import { useNGORequests } from "@/hooks/useNGORequests";
 import { useHospital } from "@/hooks/useHospital";
+import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { 
   Hospital, 
@@ -19,15 +21,24 @@ import {
   User,
   Phone,
   MapPin,
-  AlertCircle
+  AlertCircle,
+  Shield,
+  ShieldCheck,
+  ShieldX
 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { medicalRequestSchema, type MedicalRequestFormData } from '@/lib/validations';
 
 const HospitalPortal = () => {
+  const { profile } = useAuth();
   const { requests, loading, createRequest } = useRequests();
+  const { requests: ngoRequests, loading: ngoLoading, isVerified } = useNGORequests();
   const { hospital, loading: hospitalLoading } = useHospital();
   const { toast } = useToast();
+  
+  const isNGO = profile?.role === 'ngo';
+  const displayRequests = isNGO ? ngoRequests : requests;
+  const displayLoading = isNGO ? ngoLoading : loading;
   const [formData, setFormData] = useState({
     patient_name: '',
     organ_needed: '',
@@ -152,46 +163,82 @@ const HospitalPortal = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">
-              {hospital ? `${hospital.name} Portal` : 'Hospital Portal'}
+              {isNGO ? 'NGO Portal' : (hospital ? `${hospital.name} Portal` : 'Hospital Portal')}
             </h1>
             <p className="text-muted-foreground">
-              {hospital 
-                ? `Manage patient requests and find compatible donors • ${hospital.address}`
-                : 'Manage patient requests and find compatible donors'
+              {isNGO 
+                ? 'Monitor organ donation requests across verified hospitals'
+                : (hospital 
+                  ? `Manage patient requests and find compatible donors • ${hospital.address}`
+                  : 'Manage patient requests and find compatible donors'
+                )
               }
             </p>
           </div>
-          <Button className="medical-gradient">
-            <Plus className="w-4 h-4 mr-2" />
-            New Request
-          </Button>
+          {!isNGO && (
+            <Button className="medical-gradient">
+              <Plus className="w-4 h-4 mr-2" />
+              New Request
+            </Button>
+          )}
         </div>
+
+        {/* NGO Verification Status */}
+        {isNGO && (
+          <Card className={`card-shadow ${!isVerified ? 'border-warning/20 bg-warning-light/10' : 'border-success/20 bg-success/5'}`}>
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3">
+                {isVerified ? (
+                  <>
+                    <ShieldCheck className="h-8 w-8 text-success" />
+                    <div>
+                      <h3 className="font-semibold text-success">NGO Verified</h3>
+                      <p className="text-sm text-muted-foreground">
+                        You have access to anonymized patient data across verified hospitals.
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <ShieldX className="h-8 w-8 text-warning" />
+                    <div>
+                      <h3 className="font-semibold text-warning">NGO Verification Required</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Your NGO needs to be verified by an administrator to access patient data. Contact support for verification.
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <StatsCard
             title="Active Requests"
-            value={requests.filter(r => r.status === 'pending').length.toString()}
+            value={displayRequests.filter(r => r.status === 'pending').length.toString()}
             icon={Clock}
             trend={{ value: 12, label: "this week" }}
             variant="warning"
           />
           <StatsCard
             title="Matched Requests"
-            value={requests.filter(r => r.status === 'matched').length.toString()}
+            value={displayRequests.filter(r => r.status === 'matched').length.toString()}
             icon={Users}
             trend={{ value: 25, label: "this month" }}
             variant="success"
           />
           <StatsCard
             title="Completed Donations"
-            value={requests.filter(r => r.status === 'completed').length.toString()}
+            value={displayRequests.filter(r => r.status === 'completed').length.toString()}
             icon={CheckCircle}
             trend={{ value: 18, label: "this month" }}
           />
           <StatsCard
             title="Critical Cases"
-            value={requests.filter(r => r.urgency === 'critical').length.toString()}
+            value={displayRequests.filter(r => r.urgency === 'critical').length.toString()}
             icon={AlertTriangle}
             variant="emergency"
           />
@@ -346,9 +393,14 @@ const HospitalPortal = () => {
                   <div>
                     <CardTitle className="flex items-center space-x-2">
                       <Hospital className="h-5 w-5 text-primary" />
-                      <span>Active Requests</span>
+                      <span>{isNGO ? 'Available Requests' : 'Active Requests'}</span>
                     </CardTitle>
-                    <CardDescription>Current patient donation requests and their status</CardDescription>
+                    <CardDescription>
+                      {isNGO 
+                        ? 'Anonymized donation requests from verified hospitals'
+                        : 'Current patient donation requests and their status'
+                      }
+                    </CardDescription>
                   </div>
                   <div className="flex items-center space-x-2">
                     <div className="relative">
@@ -359,18 +411,28 @@ const HospitalPortal = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                {loading ? (
+                {displayLoading ? (
                   <div className="text-center py-8">
                     <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
                     <p className="text-muted-foreground mt-2">Loading requests...</p>
                   </div>
-                ) : requests.length === 0 ? (
+                ) : !isVerified && isNGO ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <ShieldX className="h-16 w-16 mx-auto text-warning mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">Verification Required</h3>
+                    <p>Your NGO must be verified to access patient data.</p>
+                    <p>Contact an administrator to complete the verification process.</p>
+                  </div>
+                ) : displayRequests.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    No requests yet. Create your first request to get started.
+                    {isNGO 
+                      ? 'No donation requests available at this time.'
+                      : 'No requests yet. Create your first request to get started.'
+                    }
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {requests.map((request) => (
+                    {displayRequests.map((request) => (
                       <Card 
                         key={request.id} 
                         className={`${
@@ -389,22 +451,31 @@ const HospitalPortal = () => {
                                 </span>
                               </div>
                               <h3 className="font-semibold text-foreground">
-                                {request.patient_name} - {request.organ_needed}
+                                {isNGO && 'anonymized_patient_name' in request
+                                  ? `${request.anonymized_patient_name} - ${request.organ_needed}`
+                                  : `${(request as any).patient_name} - ${request.organ_needed}`
+                                }
                               </h3>
                               <p className="text-sm text-muted-foreground">
-                                {request.description || `${request.organ_needed} needed for patient`}
+                                {request.organ_needed} needed for patient
                               </p>
                                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                                  <span>Blood Type: {request.blood_type_needed}</span>
                                 <span>•</span>
                                 <span>City: {request.city}</span>
-                                {request.patient_age && (
+                                {!isNGO && 'patient_age' in request && request.patient_age && (
                                   <>
                                     <span>•</span>
                                     <span>Age: {request.patient_age}</span>
                                   </>
                                 )}
-                              </div>
+                                {isNGO && (
+                                  <>
+                                    <span>•</span>
+                                    <span>Hospital: {'hospital_name' in request ? request.hospital_name : 'Unknown'}</span>
+                                  </>
+                                )}
+                               </div>
                               <div className="flex items-center space-x-2 mt-2">
                                 {request.status === 'pending' ? (
                                   <>
@@ -428,9 +499,11 @@ const HospitalPortal = () => {
                               <Button size="sm" className="medical-gradient">
                                 View Details
                               </Button>
-                              <Button size="sm" variant="outline">
-                                Edit Request
-                              </Button>
+                              {!isNGO && (
+                                <Button size="sm" variant="outline">
+                                  Edit Request
+                                </Button>
+                              )}
                             </div>
                           </div>
                         </CardContent>
