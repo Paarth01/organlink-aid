@@ -1,73 +1,108 @@
-# Welcome to your Lovable project
+# 🫀 LifeLink (OrganLink-Aid)
 
-## Project info
+![License](https://img.shields.io/github/license/Paarth01/organlink-aid?color=blue)
+![GitHub repo size](https://img.shields.io/github/repo-size/Paarth01/organlink-aid)
+![GitHub stars](https://img.shields.io/github/stars/Paarth01/organlink-aid?style=social)
+![GitHub last commit](https://img.shields.io/github/last-commit/Paarth01/organlink-aid)
+![Made with TypeScript](https://img.shields.io/badge/Made%20with-TypeScript-blue)
 
-**URL**: https://lovable.dev/projects/5431d9f2-0d16-429f-88ce-1b2d76f1f40d
+---
 
-## How can I edit this code?
+## 🧠 Project Description
 
-There are several ways of editing your application.
+**LifeLink (OrganLink-Aid)** is a full-stack organ donation management system that bridges the gap between **donors**, **recipients**, and **medical authorities**.  
+It enables hospitals to manage organ availability, patient matching, and donor data in real-time — ensuring faster, transparent, and more efficient organ transplantation processes.
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/5431d9f2-0d16-429f-88ce-1b2d76f1f40d) and start prompting.
+## 🌟 Key Features
 
-Changes made via Lovable will be committed automatically to this repo.
+- 🩸 **Donor Registration** – Register and maintain organ donor details securely  
+- 🧬 **Recipient Matching System** – Match donors with compatible recipients using smart algorithms  
+- 🕓 **Real-Time Database Updates** – Supabase Realtime for automatic data synchronization  
+- 🔐 **User Authentication** – Secure login for users, hospitals, and authorities  
+- 🧾 **Donation History** – Track past transplants and available organs  
+- 💬 **Notifications & Alerts** – Instant updates on matches and status changes  
+- 📊 **Dashboard** – Overview of donors, recipients, and organ requests  
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🏗️ Tech Stack
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+| Category | Technologies |
+|-----------|---------------|
+| **Frontend** | React (Vite) • TypeScript • Tailwind CSS • shadcn/ui |
+| **Backend** | Supabase (PostgreSQL • Auth • Realtime) |
+| **Deployment** | Vercel / Netlify |
+| **Version Control** | Git + GitHub |
 
-Follow these steps:
+---
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+## 📁 Folder Structure
+```bash
+organlink-aid/
+│
+├── src/ # Source code
+│ ├── components/ # Reusable UI components
+│ ├── pages/ # Page-level React components
+│ ├── hooks/ # Custom React hooks
+│ ├── utils/ # Helper and utility functions
+│ └── assets/ # Images, icons, and static files
+│
+├── supabase/ # Backend configuration and SQL
+├── public/ # Public assets
+├── .env.example # Environment variable sample
+├── package.json # Dependencies and scripts
+└── vite.config.ts # Vite build configuration
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## ⚙️ Installation & Setup
 
-**Use GitHub Codespaces**
+### 🧾 Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
+- Supabase account
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### 🪜 Steps
 
-## What technologies are used for this project?
+```bash
+# Clone the repository
+git clone https://github.com/Paarth01/organlink-aid.git
 
-This project is built with:
+# Navigate into the project directory
+cd organlink-aid
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+# Install dependencies
+npm install
 
-## How can I deploy this project?
+# Create environment file
+cp .env.example .env
 
-Simply open [Lovable](https://lovable.dev/projects/5431d9f2-0d16-429f-88ce-1b2d76f1f40d) and click on Share -> Publish.
+# Add your Supabase credentials to the .env file
+# Example:
+# VITE_SUPABASE_URL=your_supabase_project_url
+# VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-## Can I connect a custom domain to my Lovable project?
+# Start the development server
+npm run dev
+```
+---
 
-Yes, you can!
+## 🧠 Future Enhancements
+- 🤖 AI-based Matching – Use ML models for better donor–recipient compatibility
+- 🛰️ Hospital API Integration – Link with external hospital systems
+- 📱 PWA Support – Access as a progressive web app
+- 📊 Analytics Dashboard – Monitor real-time stats and trends
+- 🌍 Multi-language Support – Global accessibility
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+---
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## 🙌 Acknowledgments
+- Supabase – backend and database services
+- Tailwind CSS – modern utility-first CSS framework
+- shadcn/ui – accessible React components
+- Vite – lightning-fast frontend build tool
+
+---
